@@ -1,8 +1,55 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model HomeIndexViewModel
+@{
+    ViewData["Title"] = "Imóveis e obras";
 }
-
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero">
+    <div class="container hero-inner">
+        <div class="hero-copy">
+            <span class="eyebrow">WORLD CONSTRUÇÕES · IMÓVEIS E OBRAS</span>
+            <h1>Encontre o lugar certo para <em>começar.</em></h1>
+            <p>Imóveis selecionados e acompanhamento próximo em cada etapa da sua conquista.</p>
+            <a class="btn btn-accent btn-lg" href="#imoveis">Explorar imóveis <span aria-hidden="true">↘</span></a>
+        </div>
+        <div class="hero-note"><span class="hero-note-icon">⌂</span><span>Projetos com cuidado<br />em cada detalhe</span></div>
+    </div>
+</section>
+<section class="section container" id="imoveis">
+    <div class="section-heading">
+        <div><span class="eyebrow">PORTFÓLIO</span><h2>Imóveis disponíveis</h2></div>
+        <form asp-controller="Home" asp-action="Index" method="get" class="filters">
+            <select name="category" aria-label="Tipo de imóvel">
+                <option value="">Todos os tipos</option>
+                <option value="Venda" selected="@(Model.Category == "Venda")">À venda</option>
+                <option value="Aluguel" selected="@(Model.Category == "Aluguel")">Para alugar</option>
+                <option value="Obra" selected="@(Model.Category == "Obra")">Em construção</option>
+            </select>
+            <input type="number" name="maxPrice" min="0" step="1000" value="@Model.MaxPrice" placeholder="Preço máximo" aria-label="Preço máximo" />
+            <button class="btn btn-dark-blue">Filtrar</button>
+        </form>
+    </div>
+    @if (Model.Properties.Count == 0)
+    {
+        <div class="empty-state"><span class="empty-icon">⌂</span><h3>Nenhum imóvel publicado por enquanto</h3><p>Estamos preparando novidades. Volte em breve ou fale com nossa equipe.</p></div>
+    }
+    else
+    {
+        <div class="property-grid">
+        @foreach (var property in Model.Properties)
+        {
+            var photo = property.Photos.FirstOrDefault();
+            var image = photo is null ? Url.Content("~/images/house-placeholder.svg") : Url.Action("Photo", "Media", new { id = photo.Id });
+            <article class="property-card">
+                <a asp-action="Details" asp-route-id="@property.Id" class="property-image"><img src="@image" alt="@property.Title" /><span class="property-tag">@property.Category</span></a>
+                <div class="property-body">
+                    <div class="property-price">@property.Price.ToString("C0", new System.Globalization.CultureInfo("pt-BR"))</div>
+                    <h3><a asp-action="Details" asp-route-id="@property.Id">@property.Title</a></h3>
+                    <p class="property-location">@property.Neighborhood, @property.City</p>
+                    <div class="property-specs"><span>@property.Bedrooms quartos</span><span>@property.Bathrooms banheiros</span><span>@property.AreaM2.ToString("0.#") m²</span></div>
+                    <a class="text-link" asp-action="Details" asp-route-id="@property.Id">Ver detalhes <span aria-hidden="true">→</span></a>
+                </div>
+            </article>
+        }
+        </div>
+    }
+</section>
+<section class="contact-strip"><div class="container strip-content"><div><span class="eyebrow">FALE COM A GENTE</span><h2>Seu próximo passo começa com uma conversa.</h2></div><a class="btn btn-light" href="#imoveis">Escolher um imóvel</a></div></section>

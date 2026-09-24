@@ -1,0 +1,27 @@
+@model PropertyFormViewModel
+@{
+    var editing = Model.Id.HasValue;
+    ViewData["Title"] = editing ? "Editar imóvel" : "Novo imóvel";
+}
+<section class="container form-page">
+    <a asp-action="Index" class="back-link">← Painel</a>
+    <div class="panel form-panel"><span class="eyebrow">ANÚNCIOS</span><h1>@(editing ? "Editar imóvel" : "Cadastrar imóvel")</h1><p class="muted">Os anúncios só ficam visíveis para visitantes quando publicados.</p>
+        <form asp-action="@(editing ? "EditProperty" : "CreateProperty")" asp-route-id="@Model.Id" method="post" class="form-grid">
+            <div asp-validation-summary="ModelOnly" class="text-danger full"></div>
+            <input type="hidden" asp-for="Id" />
+            <label class="full">Título<input asp-for="Title" /></label><span asp-validation-for="Title" class="text-danger full"></span>
+            <label class="full">Descrição<textarea asp-for="Description" rows="5"></textarea></label><span asp-validation-for="Description" class="text-danger full"></span>
+            <label>Tipo<select asp-for="Category"><option>Venda</option><option>Aluguel</option><option>Obra</option></select></label>
+            <label>Preço (R$)<input asp-for="Price" type="number" min="0" step="1000" /></label>
+            <label>Cidade<input asp-for="City" /></label>
+            <label>Bairro<input asp-for="Neighborhood" /></label>
+            <label>Quartos<input asp-for="Bedrooms" type="number" min="0" /></label>
+            <label>Banheiros<input asp-for="Bathrooms" type="number" min="0" /></label>
+            <label>Vagas<input asp-for="ParkingSpaces" type="number" min="0" /></label>
+            <label>Área (m²)<input asp-for="AreaM2" type="number" min="0" step="0.01" /></label>
+            <label class="full">Corretor responsável<select asp-for="AssignedBrokerId"><option value="">Sem corretor atribuído</option>@foreach (var broker in Model.Brokers) { <option value="@broker.Id">@broker.FullName · @broker.Email</option> }</select></label>
+            <label class="check-row full"><input asp-for="IsPublished" /> Publicar anúncio</label>
+            <div class="full form-actions"><button class="btn btn-accent">@(editing ? "Salvar alterações" : "Criar imóvel")</button><a class="btn btn-outline-secondary" asp-action="Index">Cancelar</a></div>
+        </form>
+    </div>
+</section>

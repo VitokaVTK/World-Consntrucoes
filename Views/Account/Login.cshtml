@@ -1,0 +1,17 @@
+@model LoginInput
+@{
+    ViewData["Title"] = "Entrar";
+}
+<section class="auth-page container">
+    <div class="auth-card"><span class="eyebrow">BEM-VINDO DE VOLTA</span><h1>Entrar na sua conta</h1><p>Acesse sua área de cliente ou atendimento.</p>
+        <form asp-action="Login" method="post" class="stack-form">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ReturnUrl" />
+            <label asp-for="Email">E-mail<input asp-for="Email" type="email" autocomplete="username" /></label><span asp-validation-for="Email" class="text-danger"></span>
+            <label asp-for="Password">Senha<input asp-for="Password" autocomplete="current-password" /></label><span asp-validation-for="Password" class="text-danger"></span>
+            <label class="check-row"><input asp-for="RememberMe" /> Manter conectado</label>
+            <button class="btn btn-accent w-100">Entrar</button>
+        </form>
+        <p class="auth-foot">Ainda não tem conta? <a asp-action="Register">Cadastre-se</a></p>
+    </div>
+</section>

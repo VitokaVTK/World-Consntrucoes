@@ -1,50 +1,55 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - World_Consntrucoes</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - World Construções</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/World_Consntrucoes.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">World_Consntrucoes</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - World_Consntrucoes - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+<header class="site-header">
+    <nav class="navbar navbar-expand-lg container">
+        <a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">W</span><span>WORLD <small>CONSTRUÇÕES</small></span></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#main-nav" aria-label="Abrir navegação"><span class="navbar-toggler-icon"></span></button>
+        <div id="main-nav" class="collapse navbar-collapse">
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+                <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Imóveis</a></li>
+                @if (User.IsInRole(RoleNames.Administrator))
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Administração</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-controller="Broker" asp-action="Inbox">Atendimentos</a></li>
+                }
+                else if (User.IsInRole(RoleNames.Broker))
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Broker" asp-action="Inbox">Meus atendimentos</a></li>
+                }
+                else if (User.IsInRole(RoleNames.Client))
+                {
+                    <li class="nav-item"><a class="nav-link" asp-controller="Client" asp-action="Index">Minha área</a></li>
+                }
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item"><form asp-controller="Account" asp-action="Logout" method="post"><button class="btn btn-outline-light btn-sm">Sair</button></form></li>
+                }
+                else
+                {
+                    <li class="nav-item"><a class="btn btn-outline-light btn-sm" asp-controller="Account" asp-action="Login">Entrar</a></li>
+                    <li class="nav-item"><a class="btn btn-accent btn-sm" asp-controller="Account" asp-action="Register">Criar conta</a></li>
+                }
+            </ul>
         </div>
-    </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+    </nav>
+</header>
+<main>
+    @if (TempData["Success"] is string success) { <div class="container pt-3"><div class="alert alert-success">@success</div></div> }
+    @if (TempData["Error"] is string error) { <div class="container pt-3"><div class="alert alert-danger">@error</div></div> }
+    @RenderBody()
+</main>
+<footer class="site-footer">
+    <div class="container footer-content"><div class="brand footer-brand"><span class="brand-mark">W</span><span>WORLD <small>CONSTRUÇÕES</small></span></div><p>Construindo confiança, do projeto à entrega.</p><span>© @DateTime.UtcNow.Year World Construções</span></div>
+</footer>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

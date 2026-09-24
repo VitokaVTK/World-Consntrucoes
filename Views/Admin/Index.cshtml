@@ -1,0 +1,21 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Administração";
+}
+<section class="portal-page container">
+    <div class="portal-heading"><div><span class="eyebrow">PAINEL DA EMPRESA</span><h1>Administração</h1><p>Gerencie anúncios, equipe e solicitações.</p></div><a class="btn btn-accent" asp-action="CreateProperty">+ Novo imóvel</a></div>
+    <div class="stat-grid"><div class="stat-card"><span>Imóveis</span><strong>@Model.PropertyCount</strong></div><div class="stat-card"><span>Publicados</span><strong>@Model.PublishedCount</strong></div><div class="stat-card"><span>Novos contatos</span><strong>@Model.NewLeadCount</strong></div></div>
+    <div class="portal-columns">
+        <section class="panel"><div class="panel-heading"><h2>Imóveis recentes</h2><a asp-action="CreateProperty">Adicionar</a></div>
+            @if (Model.Properties.Count == 0) { <p class="muted">Cadastre o primeiro imóvel para começar.</p> }
+            else { <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Imóvel</th><th>Status</th><th>Preço</th><th></th></tr></thead><tbody>
+            @foreach (var item in Model.Properties) { <tr><td><strong>@item.Title</strong><small class="d-block muted">@item.City</small></td><td><span class="status-pill @(item.IsPublished ? "published" : "")">@(item.IsPublished ? "Publicado" : "Rascunho")</span></td><td>@item.Price.ToString("C0", new System.Globalization.CultureInfo("pt-BR"))</td><td><a class="text-link" asp-action="Property" asp-route-id="@item.Id">Gerenciar</a></td></tr> }
+            </tbody></table></div> }
+        </section>
+        <section class="panel"><div class="panel-heading"><h2>Contatos recentes</h2><a asp-controller="Broker" asp-action="Inbox">Abrir caixa</a></div>
+            @if (Model.RecentLeads.Count == 0) { <p class="muted">Os novos contatos aparecerão aqui.</p> }
+            else { @foreach (var lead in Model.RecentLeads) { <a class="lead-row" asp-controller="Broker" asp-action="Lead" asp-route-id="@lead.Id"><span class="avatar">@lead.FullName[..1].ToUpperInvariant()</span><span><strong>@lead.FullName</strong><small>@lead.PropertyListing.Title · @lead.Status</small></span><span class="row-arrow">→</span></a> } }
+        </section>
+    </div>
+    <section class="panel team-panel"><div class="panel-heading"><div><h2>Equipe de corretores</h2><p class="muted">O administrador mantém o acesso e as atribuições da equipe.</p></div><a class="btn btn-outline-primary" asp-action="Brokers">Gerenciar corretores</a></div></section>
+</section>

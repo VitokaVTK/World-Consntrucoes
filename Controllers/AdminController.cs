@@ -109,8 +109,8 @@ public class AdminController(
         return View(new AdminPropertyDetailsViewModel
         {
             Property = property,
-            Brokers = await userManager.GetUsersInRoleAsync(RoleNames.Broker),
-            Clients = await userManager.GetUsersInRoleAsync(RoleNames.Client)
+            Brokers = (await userManager.GetUsersInRoleAsync(RoleNames.Broker)).ToList(),
+            Clients = (await userManager.GetUsersInRoleAsync(RoleNames.Client)).ToList()
         });
     }
 
@@ -135,12 +135,7 @@ public class AdminController(
             return RedirectToAction(nameof(Property), new { id = propertyId });
         }
 
-        var extension = contentType switch
-        {
-            "image/jpeg" => ".jpg",
-            "image/png" => ".png",
-            _ => ".webp"
-        };
+        var extension = contentType switch { "image/jpeg" => ".jpg", "image/png" => ".png", _ => ".webp" };
         var fileName = $"{Guid.NewGuid():N}{extension}";
         var uploadDirectory = Path.Combine(environment.ContentRootPath, "App_Data", "uploads");
         Directory.CreateDirectory(uploadDirectory);
@@ -169,10 +164,8 @@ public class AdminController(
     {
         var property = await db.PropertyListings.FindAsync(propertyId);
         if (property is null) return NotFound();
-
         if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(description)
-            || title.Length > 120 || description.Length > 2000
-            || progressPercent is < 0 or > 100)
+            || title.Length > 120 || description.Length > 2000 || progressPercent is < 0 or > 100)
         {
             TempData["Error"] = "Preencha o título, a descrição e o progresso entre 0% e 100%.";
             return RedirectToAction(nameof(Property), new { id = propertyId });
@@ -200,6 +193,7 @@ public class AdminController(
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> LinkClient(int propertyId, string? email)
     {
+        if (!await db.PropertyListings.AnyAsync(x => x.Id == propertyId)) return NotFound();
         var client = string.IsNullOrWhiteSpace(email) ? null : await userManager.FindByEmailAsync(email.Trim());
         if (client is null || !await userManager.IsInRoleAsync(client, RoleNames.Client))
         {
@@ -218,14 +212,14 @@ public class AdminController(
             });
             await db.SaveChangesAsync();
         }
-
+        TempData["Success"] = "Cliente vinculado ao imóvel.";
         return RedirectToAction(nameof(Property), new { id = propertyId });
     }
 
     public async Task<IActionResult> Brokers()
     {
         ViewBag.Created = TempData["BrokerCreated"];
-        return View(await userManager.GetUsersInRoleAsync(RoleNames.Broker));
+        return View((await userManager.GetUsersInRoleAsync(RoleNames.Broker)).ToList());
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -234,7 +228,7 @@ public class AdminController(
         if (!ModelState.IsValid)
         {
             ViewBag.CreateError = "Confira os dados e use uma senha com pelo menos 8 caracteres, incluindo um número.";
-            return View("Brokers", await userManager.GetUsersInRoleAsync(RoleNames.Broker));
+            return View("Brokers", (await userManager.GetUsersInRoleAsync(RoleNames.Broker)).ToList());
         }
 
         var broker = new ApplicationUser
@@ -248,7 +242,7 @@ public class AdminController(
         if (!created.Succeeded)
         {
             ViewBag.CreateError = string.Join(" ", created.Errors.Select(x => x.Description));
-            return View("Brokers", await userManager.GetUsersInRoleAsync(RoleNames.Broker));
+            return View("Brokers", (await userManager.GetUsersInRoleAsync(RoleNames.Broker)).ToList());
         }
 
         await userManager.AddToRoleAsync(broker, RoleNames.Broker);
@@ -257,7 +251,7 @@ public class AdminController(
     }
 
     private async Task PopulateBrokers(PropertyFormViewModel model) =>
-        model.Brokers = await userManager.GetUsersInRoleAsync(RoleNames.Broker);
+        model.Brokers = (await userManager.GetUsersInRoleAsync(RoleNames.Broker)).ToList();
 
     private static void Apply(PropertyFormViewModel input, PropertyListing property)
     {
@@ -272,20 +266,15 @@ public class AdminController(
         property.ParkingSpaces = input.ParkingSpaces;
         property.AreaM2 = input.AreaM2;
         property.IsPublished = input.IsPublished;
-        property.AssignedBrokerId = string.IsNullOrWhiteSpace(input.AssignedBrokerId)
-            ? null : input.AssignedBrokerId;
+        property.AssignedBrokerId = string.IsNullOrWhiteSpace(input.AssignedBrokerId) ? null : input.AssignedBrokerId;
     }
 
     private static string? DetectImageType(byte[] bytes)
     {
-        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF)
-            return "image/jpeg";
-        if (bytes.Length >= 8 && bytes.Take(8).SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 }))
-            return "image/png";
-        if (bytes.Length >= 12
-            && Encoding.ASCII.GetString(bytes, 0, 4) == "RIFF"
-            && Encoding.ASCII.GetString(bytes, 8, 4) == "WEBP")
-            return "image/webp";
+        if (bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return "image/jpeg";
+        if (bytes.Length >= 8 && bytes.Take(8).SequenceEqual(new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 })) return "image/png";
+        if (bytes.Length >= 12 && Encoding.ASCII.GetString(bytes, 0, 4) == "RIFF"
+            && Encoding.ASCII.GetString(bytes, 8, 4) == "WEBP") return "image/webp";
         return null;
     }
 }

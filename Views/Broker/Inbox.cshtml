@@ -1,0 +1,13 @@
+@model IReadOnlyList<ContactLead>
+@{
+    ViewData["Title"] = "Atendimentos";
+}
+<section class="container portal-page">
+    <div class="portal-heading"><div><span class="eyebrow">RELACIONAMENTO</span><h1>Caixa de atendimentos</h1><p>Leads atribuídos a você e mensagens sobre os imóveis.</p></div></div>
+    <section class="panel">
+        @if (Model.Count == 0) { <div class="empty-state compact"><h3>Nenhum contato por enquanto</h3><p>Novas solicitações aparecerão aqui.</p></div> }
+        else { <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Cliente</th><th>Imóvel</th><th>Recebido</th><th>Status</th><th></th></tr></thead><tbody>
+        @foreach (var lead in Model) { <tr><td><strong>@lead.FullName</strong><small class="d-block muted">@lead.Email · @lead.Phone</small></td><td>@lead.PropertyListing.Title</td><td>@lead.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td><td><span class="status-pill">@lead.Status</span></td><td><a class="text-link" asp-action="Lead" asp-route-id="@lead.Id">Abrir conversa →</a></td></tr> }
+        </tbody></table></div> }
+    </section>
+</section>

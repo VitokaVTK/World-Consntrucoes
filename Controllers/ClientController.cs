@@ -25,6 +25,8 @@ public class ClientController(AppDbContext db, UserManager<ApplicationUser> user
         var leads = await db.ContactLeads
             .Where(x => x.ClientUserId == clientId)
             .Include(x => x.PropertyListing)
+            .Include(x => x.Messages.OrderBy(message => message.CreatedAtUtc))
+                .ThenInclude(message => message.SenderUser)
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync();
 

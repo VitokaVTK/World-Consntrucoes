@@ -1,0 +1,15 @@
+@model LeadConversationViewModel
+@{
+    var lead = Model.Lead;
+    ViewData["Title"] = "Conversa com " + lead.FullName;
+}
+<section class="container portal-page conversation-page">
+    <a asp-action="Inbox" class="back-link">← Caixa de atendimentos</a>
+    <div class="portal-heading"><div><span class="eyebrow">CONVERSA · @lead.Status</span><h1>@lead.FullName</h1><p>@lead.PropertyListing.Title · @lead.Email · @lead.Phone</p></div></div>
+    <section class="panel">
+        <div class="message-list">
+        @foreach (var message in lead.Messages) { <article class="message"><div class="message-meta"><strong>@message.SenderName</strong><time>@message.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time></div><p>@message.Body</p></article> }
+        </div>
+        <form asp-action="Reply" method="post" class="stack-form reply-form"><input type="hidden" name="id" value="@lead.Id" /><label>Responder<textarea name="body" rows="4" maxlength="3000" required></textarea></label><button class="btn btn-accent">Enviar resposta</button></form>
+    </section>
+</section>

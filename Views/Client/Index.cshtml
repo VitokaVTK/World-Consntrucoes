@@ -1,0 +1,20 @@
+@model ClientDashboardViewModel
+@{
+    ViewData["Title"] = "Minha área";
+}
+<section class="container portal-page">
+    <div class="portal-heading"><div><span class="eyebrow">ÁREA DO CLIENTE</span><h1>Olá, @User.Identity?.Name</h1><p>Acompanhe seus imóveis e mantenha contato com a equipe.</p></div></div>
+    <section class="panel"><div class="panel-heading"><h2>Meus imóveis e obras</h2></div>
+        @if (Model.Properties.Count == 0) { <p class="muted">Quando a equipe vincular um imóvel à sua conta, as fotos e atualizações aparecerão aqui.</p> }
+        else { <div class="client-property-list">
+        @foreach (var property in Model.Properties) { <article class="client-property"><div class="client-property-heading"><div><span class="eyebrow">@property.Category · @property.City</span><h3>@property.Title</h3></div><span class="status-pill">@(property.IsPublished ? "Publicado" : "Em acompanhamento")</span></div><p>@property.Description</p>
+            @if (property.AssignedBroker is not null) { <p class="broker-mini">Corretor responsável: <strong>@property.AssignedBroker.FullName</strong> · <a href="mailto:@property.AssignedBroker.Email">@property.AssignedBroker.Email</a></p> }
+            @foreach (var update in property.ConstructionUpdates) { <div class="update-card"><div class="progress-caption"><strong>@update.Title</strong><span>@update.ProgressPercent%</span></div><div class="progress"><div class="progress-bar" style="width: @update.ProgressPercent%"></div></div><p>@update.Description</p>@if (update.Photo is not null) { <img class="update-photo" src="@Url.Action("Photo", "Media", new { id = update.Photo.Id })" alt="@update.Photo.Caption" /> }<small>@update.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</small></div> }
+        </article> }
+        </div> }
+    </section>
+    <section class="panel"><div class="panel-heading"><h2>Minhas conversas</h2></div>
+        @if (Model.Leads.Count == 0) { <p class="muted">Ainda não há conversas vinculadas à sua conta. Você pode falar com um corretor pela página de um imóvel.</p> }
+        @foreach (var lead in Model.Leads) { <article class="client-conversation"><h3>@lead.PropertyListing.Title <span class="status-pill">@lead.Status</span></h3><div class="message-list">@foreach (var message in lead.Messages) { <article class="message"><div class="message-meta"><strong>@message.SenderName</strong><time>@message.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time></div><p>@message.Body</p></article> }</div><form asp-action="SendMessage" method="post" class="inline-form"><input type="hidden" name="id" value="@lead.Id" /><input name="body" placeholder="Escreva uma mensagem" required maxlength="3000" /><button class="btn btn-dark-blue">Enviar</button></form></article> }
+    </section>
+</section>

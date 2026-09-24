@@ -1,0 +1,41 @@
+@model PropertyListing
+@{
+    ViewData["Title"] = Model.Title;
+    var mainPhoto = Model.Photos.FirstOrDefault();
+}
+<section class="container detail-page">
+    <a asp-action="Index" class="back-link">← Voltar aos imóveis</a>
+    <div class="detail-header"><div><span class="eyebrow">@Model.Category · @Model.City</span><h1>@Model.Title</h1><p class="property-location">@Model.Neighborhood, @Model.City</p></div><div class="detail-price">@Model.Price.ToString("C0", new System.Globalization.CultureInfo("pt-BR"))</div></div>
+    <div class="detail-grid">
+        <div>
+            <div class="detail-cover">
+                @if (mainPhoto is not null) { <img src="@Url.Action("Photo", "Media", new { id = mainPhoto.Id })" alt="@mainPhoto.Caption" /> }
+                else { <img src="~/images/house-placeholder.svg" alt="Ilustração de imóvel" /> }
+            </div>
+            @if (Model.Photos.Count > 1)
+            {
+                <div class="detail-gallery">
+                @foreach (var photo in Model.Photos.Skip(1))
+                {
+                    <img src="@Url.Action("Photo", "Media", new { id = photo.Id })" alt="@photo.Caption" />
+                }
+                </div>
+            }
+            <div class="detail-description"><span class="eyebrow">SOBRE O IMÓVEL</span><h2>Um espaço para chamar de seu</h2><p>@Model.Description</p><div class="property-specs large"><span>@Model.Bedrooms quartos</span><span>@Model.Bathrooms banheiros</span><span>@Model.ParkingSpaces vagas</span><span>@Model.AreaM2.ToString("0.#") m²</span></div></div>
+        </div>
+        <aside class="inquiry-card">
+            <span class="eyebrow">INTERESSADO?</span><h2>Converse com a equipe</h2>
+            @if (Model.AssignedBroker is not null) { <p class="broker-mini">Corretor responsável<br /><strong>@Model.AssignedBroker.FullName</strong></p> }
+            <p>Deixe seus dados. Sua mensagem será encaminhada ao corretor responsável pelo imóvel.</p>
+            <form asp-action="Inquiry" method="post" class="stack-form">
+                <input type="hidden" name="PropertyListingId" value="@Model.Id" />
+                <label>Nome<input name="FullName" required maxlength="120" value="@User.Identity?.Name" /></label>
+                <label>E-mail<input name="Email" type="email" required maxlength="254" /></label>
+                <label>Telefone<input name="Phone" type="tel" required maxlength="30" /></label>
+                <label>Mensagem<textarea name="Message" required minlength="10" maxlength="3000" rows="4">Olá! Tenho interesse neste imóvel.</textarea></label>
+                <button class="btn btn-accent w-100">Enviar mensagem</button>
+                <small>Ao enviar, seus dados serão usados para responder a esta solicitação.</small>
+            </form>
+        </aside>
+    </div>
+</section>

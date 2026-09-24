@@ -1,0 +1,38 @@
+@model AdminPropertyDetailsViewModel
+@{
+    ViewData["Title"] = Model.Property.Title;
+}
+<section class="container portal-page">
+    <a asp-action="Index" class="back-link">← Painel</a>
+    <div class="portal-heading"><div><span class="eyebrow">GERENCIAR IMÓVEL</span><h1>@Model.Property.Title</h1><p>@Model.Property.Neighborhood, @Model.Property.City · @(Model.Property.IsPublished ? "Publicado" : "Rascunho")</p></div><a class="btn btn-outline-primary" asp-action="EditProperty" asp-route-id="@Model.Property.Id">Editar dados</a></div>
+    <div class="portal-columns">
+        <section class="panel"><h2>Fotos do imóvel e da obra</h2><p class="muted">Fotos públicas aparecem no anúncio. Fotos privadas ficam restritas à equipe e aos clientes vinculados.</p>
+            <form asp-action="UploadPhoto" method="post" enctype="multipart/form-data" class="stack-form">
+                <input type="hidden" name="propertyId" value="@Model.Property.Id" />
+                <label>Imagem (JPG, PNG ou WebP; até 8 MB)<input type="file" name="file" accept="image/jpeg,image/png,image/webp" required /></label>
+                <label>Legenda<input name="caption" maxlength="160" /></label>
+                <label class="check-row"><input type="checkbox" name="isPublic" value="true" /> Mostrar no anúncio público</label>
+                <button class="btn btn-accent">Adicionar foto</button>
+            </form>
+            <div class="photo-grid">
+            @foreach (var photo in Model.Property.Photos) { <figure><img src="@Url.Action("Photo", "Media", new { id = photo.Id })" alt="@photo.Caption" /><figcaption>@(string.IsNullOrWhiteSpace(photo.Caption) ? "Foto" : photo.Caption)<span class="status-pill @(photo.IsPublic ? "published" : "")">@(photo.IsPublic ? "Pública" : "Privada")</span></figcaption></figure> }
+            </div>
+        </section>
+        <section class="panel"><h2>Atualização da obra</h2><p class="muted">Registre o andamento visível aos clientes vinculados.</p>
+            <form asp-action="AddConstructionUpdate" method="post" class="stack-form">
+                <input type="hidden" name="propertyId" value="@Model.Property.Id" />
+                <label>Título<input name="title" maxlength="120" required /></label>
+                <label>Descrição<textarea name="description" rows="3" maxlength="2000" required></textarea></label>
+                <label>Progresso (%)<input name="progressPercent" type="number" min="0" max="100" value="0" required /></label>
+                <label>Foto relacionada<select name="photoId"><option value="">Sem foto</option>@foreach (var photo in Model.Property.Photos) { <option value="@photo.Id">@photo.Caption · @(photo.IsPublic ? "pública" : "privada")</option> }</select></label>
+                <button class="btn btn-accent">Registrar atualização</button>
+            </form>
+            <div class="update-list">
+            @foreach (var update in Model.Property.ConstructionUpdates) { <article class="update-card"><div class="progress-caption"><strong>@update.Title</strong><span>@update.ProgressPercent%</span></div><div class="progress"><div class="progress-bar" style="width: @update.ProgressPercent%"></div></div><p>@update.Description</p><small>@update.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</small></article> }
+            </div>
+        </section>
+    </div>
+    <section class="panel link-client-panel"><div><h2>Vincular cliente</h2><p class="muted">O vínculo libera as fotos privadas e o acompanhamento da obra na área do cliente.</p></div>
+        <form asp-action="LinkClient" method="post" class="inline-form"><input type="hidden" name="propertyId" value="@Model.Property.Id" /><input name="email" type="email" placeholder="E-mail da conta do cliente" required /><button class="btn btn-dark-blue">Vincular cliente</button></form>
+    </section>
+</section>
