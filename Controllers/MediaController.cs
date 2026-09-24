@@ -7,12 +7,12 @@ using World_Consntrucoes.Models;
 
 namespace World_Consntrucoes.Controllers;
 
-[Authorize]
 public class MediaController(
     AppDbContext db,
     UserManager<ApplicationUser> userManager,
     IWebHostEnvironment environment) : Controller
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<IActionResult> Photo(int id)
     {
@@ -23,6 +23,8 @@ public class MediaController(
 
         if (!photo.IsPublic)
         {
+            if (User.Identity?.IsAuthenticated != true) return Challenge();
+
             var allowed = User.IsInRole(RoleNames.Administrator);
             var userId = userManager.GetUserId(User);
             if (!allowed && User.IsInRole(RoleNames.Broker))

@@ -12,21 +12,19 @@
                 @if (mainPhoto is not null) { <img src="@Url.Action("Photo", "Media", new { id = mainPhoto.Id })" alt="@mainPhoto.Caption" /> }
                 else { <img src="~/images/house-placeholder.svg" alt="Ilustração de imóvel" /> }
             </div>
-            @if (Model.Photos.Count > 1)
-            {
-                <div class="detail-gallery">
-                @foreach (var photo in Model.Photos.Skip(1))
-                {
-                    <img src="@Url.Action("Photo", "Media", new { id = photo.Id })" alt="@photo.Caption" />
-                }
-                </div>
-            }
+            @if (Model.Photos.Count > 1) { <div class="detail-gallery">@foreach (var photo in Model.Photos.Skip(1)) { <img src="@Url.Action("Photo", "Media", new { id = photo.Id })" alt="@photo.Caption" /> }</div> }
             <div class="detail-description"><span class="eyebrow">SOBRE O IMÓVEL</span><h2>Um espaço para chamar de seu</h2><p>@Model.Description</p><div class="property-specs large"><span>@Model.Bedrooms quartos</span><span>@Model.Bathrooms banheiros</span><span>@Model.ParkingSpaces vagas</span><span>@Model.AreaM2.ToString("0.#") m²</span></div></div>
         </div>
         <aside class="inquiry-card">
             <span class="eyebrow">INTERESSADO?</span><h2>Converse com a equipe</h2>
-            @if (Model.AssignedBroker is not null) { <p class="broker-mini">Corretor responsável<br /><strong>@Model.AssignedBroker.FullName</strong></p> }
-            <p>Deixe seus dados. Sua mensagem será encaminhada ao corretor responsável pelo imóvel.</p>
+            @if (Model.AssignedBroker is not null)
+            {
+                <div class="broker-contact"><strong>@Model.AssignedBroker.FullName</strong><span>Corretor responsável</span>
+                    @if (!string.IsNullOrWhiteSpace(Model.AssignedBroker.Email)) { <a href="mailto:@Model.AssignedBroker.Email">Enviar e-mail</a> }
+                    @if (!string.IsNullOrWhiteSpace(Model.AssignedBroker.PhoneNumber)) { <a href="tel:@Model.AssignedBroker.PhoneNumber">Ligar: @Model.AssignedBroker.PhoneNumber</a> }
+                </div>
+            }
+            <p>Deixe seus dados. Sua mensagem ficará disponível ao corretor responsável pelo imóvel.</p>
             <form asp-action="Inquiry" method="post" class="stack-form">
                 <input type="hidden" name="PropertyListingId" value="@Model.Id" />
                 <label>Nome<input name="FullName" required maxlength="120" value="@User.Identity?.Name" /></label>
@@ -34,7 +32,7 @@
                 <label>Telefone<input name="Phone" type="tel" required maxlength="30" /></label>
                 <label>Mensagem<textarea name="Message" required minlength="10" maxlength="3000" rows="4">Olá! Tenho interesse neste imóvel.</textarea></label>
                 <button class="btn btn-accent w-100">Enviar mensagem</button>
-                <small>Ao enviar, seus dados serão usados para responder a esta solicitação.</small>
+                <small>Se você entrar com sua conta de cliente, poderá continuar a conversa pela área do cliente.</small>
             </form>
         </aside>
     </div>

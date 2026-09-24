@@ -45,9 +45,7 @@ public class HomeController(AppDbContext db) : Controller
     {
         var property = await db.PropertyListings
             .FirstOrDefaultAsync(x => x.Id == input.PropertyListingId && x.IsPublished);
-
-        if (property is null)
-            return NotFound();
+        if (property is null) return NotFound();
 
         if (!ModelState.IsValid)
         {
@@ -58,20 +56,19 @@ public class HomeController(AppDbContext db) : Controller
         var userId = User.Identity?.IsAuthenticated == true
             ? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
             : null;
-
         var lead = new ContactLead
         {
             PropertyListingId = property.Id,
             FullName = input.FullName.Trim(),
             Email = input.Email.Trim(),
             Phone = input.Phone.Trim(),
-            ClientUserId = userId,
+            ClientUserId = User.IsInRole(RoleNames.Client) ? userId : null,
             AssignedBrokerId = property.AssignedBrokerId,
             Status = "Novo"
         };
         lead.Messages.Add(new LeadMessage
         {
-            SenderUserId = userId,
+            SenderUserId = User.IsInRole(RoleNames.Client) ? userId : null,
             SenderName = input.FullName.Trim(),
             Body = input.Message.Trim()
         });
@@ -83,5 +80,6 @@ public class HomeController(AppDbContext db) : Controller
         return RedirectToAction(nameof(Details), new { id = property.Id });
     }
 
-    public IActionResult Error() => View();
+    public IActionResult Error() =>
+        View(new ErrorViewModel { RequestId = HttpContext.TraceIdentifier });
 }
