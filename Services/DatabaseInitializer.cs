@@ -31,17 +31,14 @@ public class DatabaseInitializer(
         var email = configuration["BootstrapAdmin:Email"];
         var password = configuration["BootstrapAdmin:Password"];
         if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
-        {
             return;
-        }
 
         var existing = await userManager.FindByEmailAsync(email);
         if (existing is not null)
         {
             if (!await userManager.IsInRoleAsync(existing, RoleNames.Administrator))
-            {
-                await userManager.AddToRoleAsync(existing, RoleNames.Administrator);
-            }
+                throw new InvalidOperationException(
+                    "O e-mail definido em BootstrapAdmin:Email já pertence a uma conta sem perfil de administrador. Use outro e-mail para o primeiro administrador.");
             return;
         }
 
@@ -59,6 +56,11 @@ public class DatabaseInitializer(
                 $"Não foi possível criar o administrador inicial: {string.Join(", ", created.Errors.Select(x => x.Description))}");
         }
 
-        await userManager.AddToRoleAsync(admin, RoleNames.Administrator);
+        var roleResult = await userManager.AddToRoleAsync(admin, RoleNames.Administrator);
+        if (!roleResult.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"Não foi possível atribuir o perfil de administrador: {string.Join(", ", roleResult.Errors.Select(x => x.Description))}");
+        }
     }
 }

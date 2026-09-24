@@ -33,6 +33,7 @@ public class MediaController(
                 allowed = await db.ClientPropertyAccesses.AnyAsync(x =>
                     x.ClientId == userId && x.PropertyListingId == photo.PropertyListingId);
             if (!allowed) return Forbid();
+            Response.Headers.CacheControl = "private, no-store";
         }
 
         var path = Path.Combine(environment.ContentRootPath, "App_Data", "uploads", photo.StorageFileName);
